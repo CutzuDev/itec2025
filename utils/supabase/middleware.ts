@@ -2,8 +2,6 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const updateSession = async (request: NextRequest) => {
-  // This `try/catch` block is only here for the interactive tutorial.
-  // Feel free to remove once you have Supabase connected.
   try {
     // Create an unmodified response
     let response = NextResponse.next({
@@ -22,37 +20,68 @@ export const updateSession = async (request: NextRequest) => {
           },
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value),
+              request.cookies.set(name, value)
             );
             response = NextResponse.next({
               request,
             });
             cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options),
+              response.cookies.set(name, value, options)
             );
           },
         },
-      },
+      }
     );
 
-    // This will refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
-    const user = await supabase.auth.getUser();
+    // Refresh session if expired - required for Server Components
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-    // protected routes
-    if (request.nextUrl.pathname.startsWith("/protected") && user.error) {
+    // Define all protected routes that require authentication
+    const protectedRoutes = [
+      "/dashboard",
+      "/sessions",
+      "/sessions/create",
+      "/calendar",
+      "/search",
+      "/curricula",
+      "/summaries",
+      "/podcasts",
+      "/chatrooms",
+      "/settings",
+    ];
+
+    // Define public routes that should redirect to dashboard if logged in
+    const publicOnlyRoutes = ["/", "/sign-in", "/sign-up"];
+
+    // Check if current path starts with any protected route
+    const isProtectedRoute = protectedRoutes.some(
+      (route) =>
+        request.nextUrl.pathname === route ||
+        request.nextUrl.pathname.startsWith(`${route}/`)
+    );
+
+    // Check if current path is a public-only route
+    const isPublicOnlyRoute = publicOnlyRoutes.includes(
+      request.nextUrl.pathname
+    );
+
+    // Redirect to sign-in if trying to access protected route without authentication
+    if (isProtectedRoute && error) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
     }
 
-    if (request.nextUrl.pathname === "/" && !user.error) {
-      return NextResponse.redirect(new URL("/protected", request.url));
+    // Redirect to dashboard if accessing public-only routes while authenticated
+    if (isPublicOnlyRoute && user) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
     return response;
   } catch (e) {
-    // If you are here, a Supabase client could not be created!
-    // This is likely because you have not set up environment variables.
-    // Check out http://localhost:3000 for Next Steps.
+    console.error("Supabase client error:", e);
+    // If Supabase client could not be created
     return NextResponse.next({
       request: {
         headers: request.headers,
