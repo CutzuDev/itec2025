@@ -35,37 +35,19 @@ export const signUpAction = async (formData: FormData) => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (user && user.email) {
-      if (user.email && name && user.id) {
-        const { error } = await supabase
-          .schema("public")
-          .from("users")
-          .insert({ email: user.email, full_name: name, id: user.id });
-        console.log(error);
-      }
-    }
+    const { error } = await supabase.from("users").insert([
+      {
+        email: user?.email,
+        full_name: "Test User",
+        id: user?.id,
+      },
+    ]);
 
     return encodedRedirect(
       "success",
       "/sign-up",
       "Thanks for signing up! Please check your email for a verification link."
     );
-  }
-};
-
-export const testAction = async () => {
-  const supabase = await createClient();
-  const name = "Alex";
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (user) {
-    const { error } = await supabase.schema("public").from("users").insert({
-      email: user.email!,
-      full_name: name,
-      id: user.id,
-      created_at: new Date().toString(),
-    });
   }
 };
 
@@ -175,6 +157,33 @@ export const signOutAction = async () => {
   const supabase = await createClient();
   await supabase.auth.signOut();
   return redirect("/sign-in");
+};
+
+export const testInsertAction = async () => {
+  const supabase = await createClient();
+
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const { error } = await supabase.from("users").insert([
+      {
+        email: user?.email,
+        full_name: "Test User",
+        id: user?.id,
+      },
+    ]);
+
+    if (error) {
+      console.error("Insert error:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error("Exception:", err);
+    return { success: false, error: String(err) };
+  }
 };
 
 interface UpdateEmailFormProps {

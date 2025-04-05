@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/server";
 import { InfoIcon } from "lucide-react";
 import { redirect } from "next/navigation";
-import { testAction } from "../actions";
+import TestButton from "./test";
+// import { testAction } from "../actions";
 
 export default async function ProtectedPage() {
   const supabase = await createClient();
@@ -21,7 +22,7 @@ export default async function ProtectedPage() {
         <InfoIcon size="16" strokeWidth={2} />
         This is a protected page that you can only see as an authenticated user
       </div>
-      <Button onClick={testAction}>Test</Button>
+      <TestButton />
     </div>
   );
 }
