@@ -51,17 +51,23 @@ export const updateSession = async (request: NextRequest) => {
       "/podcasts",
       "/chatrooms",
       "/settings",
+      "/",
     ];
 
     // Define public routes that should redirect to dashboard if logged in
-    const publicOnlyRoutes = ["/", "/sign-in", "/sign-up"];
+    const publicOnlyRoutes = ["/sign-in", "/sign-up"];
 
     // Check if current path starts with any protected route
-    const isProtectedRoute = protectedRoutes.some(
-      (route) =>
+    const isProtectedRoute = protectedRoutes.some((route) => {
+      // Special case for root route
+      if (route === "/" && request.nextUrl.pathname === "/") {
+        return true;
+      }
+      return (
         request.nextUrl.pathname === route ||
         request.nextUrl.pathname.startsWith(`${route}/`)
-    );
+      );
+    });
 
     // Check if current path is a public-only route
     const isPublicOnlyRoute = publicOnlyRoutes.includes(
@@ -74,7 +80,7 @@ export const updateSession = async (request: NextRequest) => {
     }
 
     // Redirect to dashboard if accessing public-only routes while authenticated
-    if (isPublicOnlyRoute && user) {
+    if ((isPublicOnlyRoute || request.nextUrl.pathname === "/") && user) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 

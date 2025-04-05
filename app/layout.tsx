@@ -30,14 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
-      <body className="bg-background text-foreground">
-        <SidebarProvider>
-          <AppSidebar />
-          <div className="flex justify-center items-center flex-col  w-full p-5">
-            {children}
-          </div>
-        </SidebarProvider>
-      </body>
+      <body className="bg-white min-h-screen text-neutral-900">{children}</body>
     </html>
   );
 }

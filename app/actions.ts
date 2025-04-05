@@ -25,6 +25,9 @@ export const signUpAction = async (formData: FormData) => {
     password,
     options: {
       emailRedirectTo: `${origin}/auth/callback`,
+      data: {
+        full_name: name,
+      },
     },
   });
 
@@ -32,17 +35,6 @@ export const signUpAction = async (formData: FormData) => {
     console.error(error.code + " " + error.message);
     return encodedRedirect("error", "/sign-up", error.message);
   } else {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    const { error } = await supabase.from("users").insert([
-      {
-        email: user?.email,
-        full_name: "Test User",
-        id: user?.id,
-      },
-    ]);
-
     return encodedRedirect(
       "success",
       "/sign-up",
@@ -166,11 +158,16 @@ export const testInsertAction = async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    
+    if (!user || !user.email) {
+      return { success: false, error: "User not found or missing email" };
+    }
+    
     const { error } = await supabase.from("users").insert([
       {
-        email: user?.email,
+        email: user.email,
         full_name: "Test User",
-        id: user?.id,
+        id: user.id,
       },
     ]);
 

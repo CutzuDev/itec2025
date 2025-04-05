@@ -1,7 +1,7 @@
+import { signOutAction } from "@/app/actions";
 import { ResetPasswordForm } from "@/components/auth/reset-password";
 import { UpdateEmailForm } from "@/components/auth/update-mail";
 import { FormMessage, Message } from "@/components/form-message";
-import { signOutAction } from "../actions";
 import { Button } from "@/components/ui/button";
 async function page(props: { searchParams: Promise<Message> }) {
   const searchParams = await props.searchParams;
