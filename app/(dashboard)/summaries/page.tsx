@@ -141,25 +141,76 @@ function SummariesPage() {
       const formData = new FormData();
       formData.append("pdf", file);
 
-      // Use fetch instead of XMLHttpRequest for better response handling
-      const response = await fetch("/api/process-pdf", {
-        method: "POST",
-        body: formData,
-        // Add a longer timeout for the request
-        signal: AbortSignal.timeout(120000), // 2 minute timeout
-      });
+      // Increase timeout and implement retry logic
+      const maxRetries = 2;
+      let retryCount = 0;
+      let response;
+      
+      while (retryCount <= maxRetries) {
+        try {
+          response = await fetch("/api/process-pdf", {
+            method: "POST",
+            body: formData,
+            // Increase timeout to 5 minutes (300000ms)
+            signal: AbortSignal.timeout(300000),
+          });
+          
+          // If request succeeded, exit retry loop
+          if (response.ok) {
+            break;
+          }
+          
+          // If we got a 504 timeout, retry
+          if (response.status === 504) {
+            retryCount++;
+            if (retryCount <= maxRetries) {
+              setError(`Processing timeout (${retryCount}/${maxRetries} retries). Trying again...`);
+              // Wait before retrying
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              continue;
+            }
+          }
+          
+          // For non-504 errors, or if we're out of retries, throw the error
+          throw new Error(`API error: ${response.status}`);
+        } catch (fetchError) {
+          // If it's an abort/timeout error, retry
+          if (fetchError instanceof DOMException && fetchError.name === "AbortError") {
+            retryCount++;
+            if (retryCount <= maxRetries) {
+              setError(`Request timed out (${retryCount}/${maxRetries} retries). Trying again...`);
+              // Wait before retrying
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              continue;
+            }
+          }
+          // For other errors, or if we're out of retries, re-throw
+          throw fetchError;
+        }
+      }
 
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+      if (!response || !response.ok) {
+        throw new Error(
+          `Failed to process PDF after ${maxRetries} retries. The file may be too large or complex.`
+        );
       }
 
       // Get the HTML content directly
       const htmlContent = await response.text();
       setSummaryHtml(htmlContent);
+      setError(null); // Clear any retry error messages
     } catch (err) {
-      setError(
-        `Failed to get summary: ${err instanceof Error ? err.message : "Unknown error"}`
-      );
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      
+      // Provide a more helpful message for 504 errors
+      if (errorMessage.includes("504")) {
+        setError(
+          "The PDF processing timed out. This could happen with large or complex documents. " + 
+          "Try breaking your document into smaller parts or try again later."
+        );
+      } else {
+        setError(`Failed to get summary: ${errorMessage}`);
+      }
     } finally {
       setIsUploading(false);
     }
