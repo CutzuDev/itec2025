@@ -1,6 +1,7 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import {
@@ -22,7 +23,7 @@ import {
 import { EventActions } from "@/components/event-actions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import AudioLink from './audio-link';
+import AudioLink from '../_components/audio-link';
 
 // Define interfaces for our data
 interface EventType {
@@ -182,7 +183,7 @@ export default async function EventPage({
 
   if (eventError || !event) {
     console.error("Error fetching event:", eventError);
-    return redirect("/sessions");
+    return notFound();
   }
 
   const typedEvent = event as unknown as EventType;
