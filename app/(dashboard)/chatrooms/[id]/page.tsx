@@ -1,3 +1,5 @@
+"use server";
+
 import { createClient } from "@/utils/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -6,6 +8,7 @@ import { MessageSquare, ArrowLeft, Send, CalendarIcon, ClockIcon, MapPinIcon, Us
 import Link from "next/link";
 import { ChatMessages } from "@/components/chat-messages";
 import { ChatInput } from "@/components/chat-input";
+import React from "react";
 
 // Definirea tipului pentru mesaje
 interface Message {
@@ -44,13 +47,15 @@ interface Event {
   }[];
 }
 
-// Remove custom interface and use Next.js parameters directly
 export default async function ChatroomPage({
   params,
 }: {
   params: { id: string };
 }) {
   const supabase = await createClient();
+  
+  // Await params before accessing properties
+  const { id: eventId } = await params;
 
   const {
     data: { user },
@@ -68,7 +73,7 @@ export default async function ChatroomPage({
       creator:users!creator_id(full_name),
       event_participants(count)
     `)
-    .eq("id", params.id)
+    .eq("id", eventId)
     .single();
 
   if (eventError || !eventData) {
@@ -83,7 +88,7 @@ export default async function ChatroomPage({
   const { data: participant } = await supabase
     .from("event_participants")
     .select("id")
-    .eq("event_id", params.id)
+    .eq("event_id", eventId)
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -101,7 +106,7 @@ export default async function ChatroomPage({
       *,
       user:users!user_id(full_name, avatar_url)
     `)
-    .eq("event_id", params.id)
+    .eq("event_id", eventId)
     .order("created_at", { ascending: true });
 
   if (messagesError) {
@@ -152,12 +157,12 @@ export default async function ChatroomPage({
               <ChatMessages 
                 initialMessages={messages} 
                 currentUserId={user.id} 
-                eventId={params.id}
+                eventId={eventId}
               />
             </div>
             <div className="border-t p-4">
               <ChatInput 
-                eventId={params.id} 
+                eventId={eventId} 
                 userId={user.id} 
                 userName={currentUser?.full_name || 'Utilizator necunoscut'}
               />
