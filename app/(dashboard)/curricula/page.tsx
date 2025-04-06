@@ -584,7 +584,9 @@ export default function CurriculaPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <CardTitle className="truncate">
-                        {curriculum.title}
+                        {curriculum.title.length > 14 
+                          ? `${curriculum.title.substring(0, 14)}...` 
+                          : curriculum.title}
                       </CardTitle>
                       <CardDescription>
                         Created on {formatDate(curriculum.created_at)}
