@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { MessageSquare, ArrowLeft, Send, CalendarIcon, ClockIcon, MapPinIcon, UsersIcon } from "lucide-react";
@@ -44,7 +44,13 @@ interface Event {
   }[];
 }
 
-export default async function ChatroomPage({ params }: { params: { id: string } }) {
+interface ChatroomPageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default async function ChatroomPage({ params }: ChatroomPageProps) {
   const supabase = await createClient();
 
   const {
@@ -68,7 +74,7 @@ export default async function ChatroomPage({ params }: { params: { id: string } 
 
   if (eventError || !eventData) {
     console.error("Error fetching event:", eventError);
-    return redirect("/chatrooms");
+    return notFound();
   }
   
   // Convertim la tipul Event
@@ -86,7 +92,7 @@ export default async function ChatroomPage({ params }: { params: { id: string } 
   const isParticipant = !!participant;
 
   if (!isCreator && !isParticipant) {
-    return redirect("/chatrooms");
+    return notFound();
   }
 
   // Fetch chat messages
