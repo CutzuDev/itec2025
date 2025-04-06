@@ -145,6 +145,8 @@ function SummariesPage() {
       const response = await fetch("/api/process-pdf", {
         method: "POST",
         body: formData,
+        // Add a longer timeout for the request
+        signal: AbortSignal.timeout(120000), // 2 minute timeout
       });
 
       if (!response.ok) {
