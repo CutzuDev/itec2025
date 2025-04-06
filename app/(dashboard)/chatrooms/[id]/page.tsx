@@ -44,13 +44,12 @@ interface Event {
   }[];
 }
 
-interface ChatroomPageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default async function ChatroomPage({ params }: ChatroomPageProps) {
+// Remove custom interface and use Next.js parameters directly
+export default async function ChatroomPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const supabase = await createClient();
 
   const {
