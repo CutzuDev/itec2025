@@ -20,6 +20,7 @@ import {
   SkipBack,
   SkipForward,
   Square,
+  RefreshCw,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -61,6 +62,7 @@ export default function PodcastsPage() {
   const [volume, setVolume] = useState(1);
   const playerRef = useRef<HTMLAudioElement | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
   const supabase = createClient();
 
   const languageOptions: LanguageOption[] = [
@@ -475,14 +477,16 @@ export default function PodcastsPage() {
                         Created on {formatDate(curriculum.created_at)}
                       </CardDescription>
                     </div>
-                    {curriculum.audio_url && (
-                      <Badge
-                        variant="outline"
-                        className="bg-green-50 text-green-700 border-green-200"
-                      >
-                        Audio Available
-                      </Badge>
-                    )}
+                    <div>
+                      {curriculum.audio_url && (
+                        <Badge
+                          variant="outline"
+                          className="bg-green-50 text-green-700 border-green-200"
+                        >
+                          Audio Available
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -578,28 +582,39 @@ export default function PodcastsPage() {
                 <CardFooter className="flex justify-between">
                   <div className="flex space-x-2">
                     {curriculum.audio_url ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => togglePlay(curriculum)}
-                        className={
-                          playingId === curriculum.id && isPlaying
-                            ? "bg-primary text-primary-foreground"
-                            : ""
-                        }
-                      >
-                        {playingId === curriculum.id && isPlaying ? (
-                          <>
-                            <Pause className="h-4 w-4 mr-2" />
-                            Pause
-                          </>
-                        ) : (
-                          <>
-                            <Play className="h-4 w-4 mr-2" />
-                            Play Audio
-                          </>
-                        )}
-                      </Button>
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => togglePlay(curriculum)}
+                          className={
+                            playingId === curriculum.id && isPlaying
+                              ? "bg-primary text-primary-foreground"
+                              : ""
+                          }
+                        >
+                          {playingId === curriculum.id && isPlaying ? (
+                            <>
+                              <Pause className="h-4 w-4 mr-2" />
+                              Pause
+                            </>
+                          ) : (
+                            <>
+                              <Play className="h-4 w-4 mr-2" />
+                              Play Audio
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => convertToSpeech(curriculum)}
+                          disabled={processingId === curriculum.id}
+                        >
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Regenerate in {languageOptions.find(l => l.value === selectedLanguage)?.label || "English"}
+                        </Button>
+                      </>
                     ) : (
                       <Button
                         variant="outline"

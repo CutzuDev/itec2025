@@ -44,11 +44,6 @@ const mainItems = [
     url: "/calendar",
     icon: Calendar,
   },
-  {
-    title: "Search",
-    url: "/search",
-    icon: Search,
-  },
 ];
 
 // Learning content items
