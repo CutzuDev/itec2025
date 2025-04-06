@@ -1,7 +1,7 @@
 # StudentHub
 
 <div align="center">
-  <img src="public/study_group.svg" alt="StudentHub Logo" width="200" />
+  <a href="https://itec.andreipau.me/">https://itec.andreipau.me/</a>
   <h3>Transform Your Study Experience</h3>
   <p>A modern platform for students to connect, share resources, and study together</p>
 </div>
